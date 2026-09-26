@@ -1,0 +1,6 @@
+{
+  "name": "ClaritySpend - Budget & Expense Analytics",
+  "description": "Personal finance tracker with visual spending analytics, budget pace tracking, user accounts, and recommendations for saving money.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
