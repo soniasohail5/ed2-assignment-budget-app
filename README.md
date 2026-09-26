@@ -1,3 +1,4 @@
+## ClaritySpend: Budget & Money Tracking App
 ## Description
 ClaritySpend is a modern, responsive personal finance and budget analytics web application. 
 Track income and expenses, monitor daily spending, visualize cash flow with interactive charts, set category limits for budgeting.
