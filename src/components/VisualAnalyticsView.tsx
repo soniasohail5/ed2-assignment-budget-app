@@ -157,7 +157,7 @@ export const VisualAnalyticsView: React.FC<VisualAnalyticsViewProps> = ({
     ...trajectoryData.map(d => d.cumulativeActual)
   ) * 1.1;
 
-  // 50/30/20 percentages
+  // Target percentage allocations (Needs / Wants / Savings)
   const incomeBase = summary.totalIncome > 0 ? summary.totalIncome : summary.totalExpenses;
   const needsPct = Math.round((summary.needsSpend / incomeBase) * 100);
   const wantsPct = Math.round((summary.wantsSpend / incomeBase) * 100);

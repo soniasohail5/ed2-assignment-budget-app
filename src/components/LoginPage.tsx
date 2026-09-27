@@ -13,7 +13,8 @@ import {
   PieChart,
   ArrowRight,
   Layers,
-  PiggyBank
+  PiggyBank,
+  Sliders
 } from 'lucide-react';
 import { AuthService } from '../services/authService';
 import { evaluatePasswordStrength } from '../services/cryptoUtils';
@@ -179,11 +180,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
               <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
                 <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
-                  <Layers className="w-4 h-4" />
+                  <Sliders className="w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-bold text-white">50/30/20 Principles</h2>
+                <h2 className="text-sm font-bold text-white">Customizable Budget Splits</h2>
                 <p className="text-xs text-slate-400">
-                  Automated categorization of Needs vs Wants vs Savings to balance your cashflow.
+                  Set personalized percentage ratios for Needs, Wants, and Savings to match your financial goals.
                 </p>
               </div>
             </div>

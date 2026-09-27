@@ -53,7 +53,7 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
               Actionable Savings Recommendations
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
-              Data-backed financial advice computed directly from your dining habits, subscription counts, and 50/30/20 budget pacing.
+              Data-backed financial advice computed directly from your dining habits, subscription counts, and budget allocation pacing.
             </p>
           </div>
 

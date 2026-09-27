@@ -333,7 +333,7 @@ export const BudgetsView: React.FC<BudgetsViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
-                    50/30/20 Type
+                    Allocation Type
                   </label>
                   <select
                     value={newCatType}
