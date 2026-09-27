@@ -12,12 +12,17 @@ import {
   Eye, 
   EyeOff, 
   FileSpreadsheet,
-  AlertTriangle
+  AlertTriangle,
+  Sliders,
+  Layers,
+  Sparkles,
+  Check
 } from 'lucide-react';
-import { User, CurrencyCode } from '../types/finance';
+import { User, CurrencyCode, BudgetRatios, DEFAULT_BUDGET_RATIOS } from '../types/finance';
 import { AuthService } from '../services/authService';
 import { StorageService, CURRENCY_CONFIGS } from '../services/storageService';
 import { evaluatePasswordStrength } from '../services/cryptoUtils';
+import { RATIO_PRESETS } from './BudgetRatioModal';
 
 interface AccountViewProps {
   user: User;
@@ -42,6 +47,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
   const [name, setName] = useState(user.name);
   const [currency, setCurrency] = useState<CurrencyCode>(user.currency);
   const [monthlyIncome, setMonthlyIncome] = useState(user.monthlyIncomeTarget.toString());
+  const [needsRatio, setNeedsRatio] = useState(user.budgetRatios?.needs ?? 50);
+  const [wantsRatio, setWantsRatio] = useState(user.budgetRatios?.wants ?? 30);
+  const [savingsRatio, setSavingsRatio] = useState(user.budgetRatios?.savings ?? 20);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
 
   // Password change states
@@ -58,15 +66,28 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
   const strength = evaluatePasswordStrength(newPassword);
 
+  const totalRatios = needsRatio + wantsRatio + savingsRatio;
+  const isRatiosValid = totalRatios === 100;
+
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+
+    if (!isRatiosValid) {
+      setProfileMsg('Budget allocation ratios must total exactly 100%.');
+      return;
+    }
 
     try {
       const updated = AuthService.updateUserProfile(user.id, {
         name: name.trim(),
         currency,
         monthlyIncomeTarget: parseFloat(monthlyIncome) || 3500,
+        budgetRatios: {
+          needs: needsRatio,
+          wants: wantsRatio,
+          savings: savingsRatio,
+        },
       });
       onUserUpdated(updated);
       setProfileMsg('Profile and financial target preferences saved successfully!');
@@ -308,11 +329,171 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 </div>
               </div>
 
+              {/* Budget Allocation Framework Customization */}
+              <div className="pt-3 border-t border-slate-800/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
+                    <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+                    Budget Allocation Framework
+                  </label>
+                  <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                    isRatiosValid 
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                  }`}>
+                    {totalRatios}% {isRatiosValid ? '✓ Balanced' : '⚠️ Must = 100%'}
+                  </span>
+                </div>
+
+                {/* Framework Presets */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {RATIO_PRESETS.slice(0, 3).map(preset => {
+                    const isSelected = 
+                      needsRatio === preset.ratios.needs && 
+                      wantsRatio === preset.ratios.wants && 
+                      savingsRatio === preset.ratios.savings;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => {
+                          setNeedsRatio(preset.ratios.needs);
+                          setWantsRatio(preset.ratios.wants);
+                          setSavingsRatio(preset.ratios.savings);
+                        }}
+                        className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-indigo-500/15 border-indigo-500/50 text-white font-bold ring-1 ring-indigo-500/40'
+                            : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="text-[11px] font-mono">{preset.name}</div>
+                        <div className="text-[9px] text-slate-500 truncate">{preset.tag}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Proportion Bar */}
+                <div className="h-3 rounded-lg overflow-hidden bg-slate-950 border border-slate-800 flex">
+                  <div 
+                    style={{ width: `${Math.max(0, Math.min(100, needsRatio))}%` }} 
+                    className="bg-indigo-500 transition-all duration-200" 
+                    title={`Needs: ${needsRatio}%`}
+                  />
+                  <div 
+                    style={{ width: `${Math.max(0, Math.min(100, wantsRatio))}%` }} 
+                    className="bg-amber-500 transition-all duration-200" 
+                    title={`Wants: ${wantsRatio}%`}
+                  />
+                  <div 
+                    style={{ width: `${Math.max(0, Math.min(100, savingsRatio))}%` }} 
+                    className="bg-emerald-500 transition-all duration-200" 
+                    title={`Savings: ${savingsRatio}%`}
+                  />
+                </div>
+
+                {/* Sliders for Needs, Wants, Savings */}
+                <div className="space-y-2.5 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                  {/* Needs */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-semibold text-indigo-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                        Needs ({needsRatio}%)
+                      </span>
+                      <span className="font-mono text-slate-400">
+                        {currencySymbol}{(((parseFloat(monthlyIncome) || 3500) * needsRatio) / 100).toFixed(0)}/mo
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={needsRatio}
+                      onChange={e => setNeedsRatio(parseInt(e.target.value, 10))}
+                      className="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Wants */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-semibold text-amber-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        Wants ({wantsRatio}%)
+                      </span>
+                      <span className="font-mono text-slate-400">
+                        {currencySymbol}{(((parseFloat(monthlyIncome) || 3500) * wantsRatio) / 100).toFixed(0)}/mo
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={wantsRatio}
+                      onChange={e => setWantsRatio(parseInt(e.target.value, 10))}
+                      className="w-full accent-amber-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Savings */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Savings ({savingsRatio}%)
+                      </span>
+                      <span className="font-mono text-slate-400">
+                        {currencySymbol}{(((parseFloat(monthlyIncome) || 3500) * savingsRatio) / 100).toFixed(0)}/mo
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={savingsRatio}
+                      onChange={e => setSavingsRatio(parseInt(e.target.value, 10))}
+                      className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {!isRatiosValid && (
+                  <div className="flex items-center justify-between text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg">
+                    <span>Total is {totalRatios}%. Must equal 100%.</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const rem = 100 - (needsRatio + wantsRatio);
+                        if (rem >= 0) setSavingsRatio(rem);
+                        else {
+                          const sum = needsRatio + wantsRatio;
+                          const n = Math.round((needsRatio / sum) * 80);
+                          const w = Math.round((wantsRatio / sum) * 20);
+                          setNeedsRatio(n);
+                          setWantsRatio(w);
+                          setSavingsRatio(100 - (n + w));
+                        }
+                      }}
+                      className="text-[11px] font-bold text-amber-400 hover:text-amber-200 underline cursor-pointer"
+                    >
+                      Auto-Balance
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+                disabled={!isRatiosValid}
+                className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-md transition-all cursor-pointer ${
+                  isRatiosValid
+                    ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20 active:scale-95'
+                    : 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none'
+                }`}
               >
-                Save Profile Changes
+                Save Profile & Ratios
               </button>
             </form>
           </div>

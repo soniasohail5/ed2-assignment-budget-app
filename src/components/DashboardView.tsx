@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -12,9 +12,11 @@ import {
   ArrowDownLeft, 
   ChevronRight,
   Flame,
-  Plus
+  Plus,
+  Sliders
 } from 'lucide-react';
-import { MonthlyBudgetSummary, Category, Transaction, SavingGoal, Recommendation } from '../types/finance';
+import { MonthlyBudgetSummary, Category, Transaction, SavingGoal, Recommendation, BudgetRatios, DEFAULT_BUDGET_RATIOS } from '../types/finance';
+import { BudgetRatioModal } from './BudgetRatioModal';
 
 interface DashboardViewProps {
   summary: MonthlyBudgetSummary;
@@ -23,6 +25,9 @@ interface DashboardViewProps {
   goals: SavingGoal[];
   recommendations: Recommendation[];
   currencySymbol: string;
+  budgetRatios?: BudgetRatios;
+  monthlyIncome?: number;
+  onUpdateBudgetRatios?: (ratios: BudgetRatios) => void;
   onOpenAddModal: () => void;
   onNavigateTab: (tab: 'dashboard' | 'analytics' | 'transactions' | 'budgets' | 'recommendations' | 'goals') => void;
   onEditTransaction: (tx: Transaction) => void;
@@ -36,11 +41,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   goals,
   recommendations,
   currencySymbol,
+  budgetRatios,
+  monthlyIncome,
+  onUpdateBudgetRatios,
   onOpenAddModal,
   onNavigateTab,
   onEditTransaction,
   onDeleteTransaction,
 }) => {
+  const [isRatioModalOpen, setIsRatioModalOpen] = useState(false);
+  const activeRatios = budgetRatios || DEFAULT_BUDGET_RATIOS;
   // Recent transactions for this month
   const monthTransactions = transactions
     .filter(tx => tx.date.startsWith(summary.month))
@@ -138,12 +148,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   Excellent discipline! You are pacing {Math.abs(paceDifference).toFixed(0)}% under target budget with {summary.daysRemaining} days remaining.
                 </span>
               ) : (
-                <span>On steady track. Your daily burn rate is aligned with monthly projections.</span>
+                <span>On steady track. Your daily spending is aligned with monthly projections.</span>
               )}
             </p>
           </div>
 
-          {/* Burn rate badge & remaining allowance */}
+          {/* Daily allowance & remaining budget */}
           <div className="flex items-center gap-3 sm:gap-4 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
             <div className="space-y-1">
               <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
@@ -271,35 +281,60 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Needs vs Wants Card */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700/80 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">50/30/20 Split</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Sparkles className="w-4 h-4" />
+        {/* Needs vs Wants Target Allocation Card */}
+        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700/80 transition-all shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                <span>{activeRatios.needs}/{activeRatios.wants}/{activeRatios.savings} Split</span>
+              </span>
+              <div className="flex items-center gap-1.5">
+                {onUpdateBudgetRatios && (
+                  <button
+                    onClick={() => setIsRatioModalOpen(true)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Customize Framework Ratios"
+                  >
+                    <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+                  </button>
+                )}
+                <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+              </div>
+            </div>
+            <div className="text-sm font-semibold text-white mt-1">
+              <span className="text-indigo-400 font-mono">{summary.totalIncome > 0 ? ((summary.needsSpend / summary.totalIncome) * 100).toFixed(0) : 0}%</span> Needs • {' '}
+              <span className="text-amber-400 font-mono">{summary.totalIncome > 0 ? ((summary.wantsSpend / summary.totalIncome) * 100).toFixed(0) : 0}%</span> Wants • {' '}
+              <span className="text-emerald-400 font-mono">{summary.savingsRate}%</span> Save
+            </div>
+            <div className="mt-3 flex h-2 rounded-full overflow-hidden bg-slate-950 border border-slate-800">
+              <div 
+                style={{ width: `${Math.min(100, summary.totalIncome > 0 ? (summary.needsSpend / summary.totalIncome) * 100 : activeRatios.needs)}%` }} 
+                className="bg-indigo-500 transition-all duration-300" 
+                title={`Needs: Target ${activeRatios.needs}%`}
+              />
+              <div 
+                style={{ width: `${Math.min(100, summary.totalIncome > 0 ? (summary.wantsSpend / summary.totalIncome) * 100 : activeRatios.wants)}%` }} 
+                className="bg-amber-500 transition-all duration-300" 
+                title={`Wants: Target ${activeRatios.wants}%`}
+              />
+              <div 
+                style={{ width: `${Math.min(100, Math.max(0, summary.savingsRate))}%` }} 
+                className="bg-emerald-500 transition-all duration-300" 
+                title={`Savings: Target ${activeRatios.savings}%`}
+              />
             </div>
           </div>
-          <div className="text-sm font-semibold text-white mt-1">
-            <span className="text-indigo-400 font-mono">{summary.totalIncome > 0 ? ((summary.needsSpend / summary.totalIncome) * 100).toFixed(0) : 0}%</span> Needs • {' '}
-            <span className="text-amber-400 font-mono">{summary.totalIncome > 0 ? ((summary.wantsSpend / summary.totalIncome) * 100).toFixed(0) : 0}%</span> Wants • {' '}
-            <span className="text-emerald-400 font-mono">{summary.savingsRate}%</span> Save
-          </div>
-          <div className="mt-3 flex h-2 rounded-full overflow-hidden bg-slate-950 border border-slate-800">
-            <div 
-              style={{ width: `${Math.min(100, summary.totalIncome > 0 ? (summary.needsSpend / summary.totalIncome) * 100 : 50)}%` }} 
-              className="bg-indigo-500" 
-              title="Needs"
-            />
-            <div 
-              style={{ width: `${Math.min(100, summary.totalIncome > 0 ? (summary.wantsSpend / summary.totalIncome) * 100 : 30)}%` }} 
-              className="bg-amber-500" 
-              title="Wants"
-            />
-            <div 
-              style={{ width: `${Math.min(100, Math.max(0, summary.savingsRate))}%` }} 
-              className="bg-emerald-500" 
-              title="Savings"
-            />
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-3 border-t border-slate-800/60 mt-3">
+            <span>Targets: {activeRatios.needs}% / {activeRatios.wants}% / {activeRatios.savings}%</span>
+            <button
+              onClick={() => onNavigateTab('analytics')}
+              className="text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
+            >
+              Deep Dive →
+            </button>
           </div>
         </div>
 
@@ -598,6 +633,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Budget Ratio Modal */}
+      {onUpdateBudgetRatios && (
+        <BudgetRatioModal
+          isOpen={isRatioModalOpen}
+          onClose={() => setIsRatioModalOpen(false)}
+          currentRatios={activeRatios}
+          monthlyIncome={monthlyIncome || summary.totalIncome || 3500}
+          currencySymbol={currencySymbol}
+          onSave={newRatios => {
+            onUpdateBudgetRatios(newRatios);
+          }}
+        />
+      )}
 
     </div>
   );

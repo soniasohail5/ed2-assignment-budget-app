@@ -1,4 +1,4 @@
-import { Category, Transaction, SavingGoal, MonthlyBudgetSummary, Recommendation } from '../types/finance';
+import { Category, Transaction, SavingGoal, MonthlyBudgetSummary, Recommendation, BudgetRatios } from '../types/finance';
 
 export class RecommendationEngine {
   /**
@@ -10,8 +10,10 @@ export class RecommendationEngine {
     summary: MonthlyBudgetSummary;
     goals: SavingGoal[];
     currencySymbol: string;
+    budgetRatios?: BudgetRatios;
   }): Recommendation[] {
-    const { categories, transactions, summary, goals, currencySymbol } = params;
+    const { categories, transactions, summary, goals, currencySymbol, budgetRatios } = params;
+    const targetRatios = budgetRatios || { needs: 50, wants: 30, savings: 20 };
     const recommendations: Recommendation[] = [];
 
     // Filter current month transactions
@@ -87,37 +89,37 @@ export class RecommendationEngine {
       });
     }
 
-    // 3. 50/30/20 Rule Balancing
+    // 3. Needs/Wants/Savings Target Allocation Balancing
     if (summary.totalIncome > 0) {
       const wantsPercentage = (summary.wantsSpend / summary.totalIncome) * 100;
       const savingsPercentage = (summary.netSavings / summary.totalIncome) * 100;
 
-      if (wantsPercentage > 35) {
-        const excessWants = Math.round(summary.wantsSpend - (summary.totalIncome * 0.30));
+      if (wantsPercentage > (targetRatios.wants + 5)) {
+        const excessWants = Math.round(summary.wantsSpend - (summary.totalIncome * (targetRatios.wants / 100)));
         recommendations.push({
           id: 'rec_wants_rebalance',
-          title: 'Rebalance 50/30/20 Discretionary Spending',
+          title: `Rebalance Wants to ${targetRatios.wants}% Target`,
           category: 'Budget Structure',
           potentialSavingsMonthly: Math.max(50, excessWants),
           potentialSavingsAnnual: Math.max(50, excessWants) * 12,
           impact: 'high',
           type: 'needs_wants_rebalance',
-          description: `Discretionary "Wants" account for ${wantsPercentage.toFixed(0)}% of your income (ideal target is 30% or less).`,
-          reasoning: `Trimming discretionary categories down to the 30% ceiling would free up ${currencySymbol}${excessWants}/month to channel directly toward emergency savings or debt payoff.`,
+          description: `Discretionary "Wants" account for ${wantsPercentage.toFixed(0)}% of your income (your target is ${targetRatios.wants}% or less).`,
+          reasoning: `Trimming discretionary categories down to your ${targetRatios.wants}% ceiling would free up ${currencySymbol}${excessWants}/month to channel directly toward emergency savings or dedicated milestone goals.`,
           actionLabel: 'Rebalance Budgets',
           actionType: 'adjust_budget',
         });
-      } else if (savingsPercentage < 15 && summary.totalIncome > 2000) {
-        const boostTarget = Math.round(summary.totalIncome * 0.10);
+      } else if (savingsPercentage < (targetRatios.savings - 5) && summary.totalIncome > 2000) {
+        const boostTarget = Math.round(summary.totalIncome * (Math.max(5, targetRatios.savings - savingsPercentage) / 100));
         recommendations.push({
           id: 'rec_savings_rate_boost',
-          title: 'Automate 10% Pay-Yourself-First Transfer',
+          title: `Boost Savings Toward ${targetRatios.savings}% Target`,
           category: 'Wealth Building',
           potentialSavingsMonthly: boostTarget,
           potentialSavingsAnnual: boostTarget * 12,
           impact: 'high',
           type: 'emergency_boost',
-          description: `Your current net savings rate is ${Math.max(0, savingsPercentage).toFixed(0)}% (recommended threshold: 20%+).`,
+          description: `Your current net savings rate is ${Math.max(0, savingsPercentage).toFixed(0)}% (your target threshold is ${targetRatios.savings}%+).`,
           reasoning: `Scheduling an automatic bank transfer of ${currencySymbol}${boostTarget} into a high-yield account immediately on payday removes the temptation to spend leftover cash.`,
           actionLabel: 'View Monthly Breakdown',
           actionType: 'view_analytics',
@@ -144,7 +146,7 @@ export class RecommendationEngine {
       });
     }
 
-    // 5. Budget Burn Rate Alert
+    // 5. Budget Pace Alert
     if (summary.expectedPacePercentage > 0 && summary.budgetUtilization > (summary.expectedPacePercentage + 12)) {
       const overspendPace = summary.budgetUtilization - summary.expectedPacePercentage;
       const dailyCap = Math.max(0, summary.recommendedDailyRemaining);
@@ -158,7 +160,7 @@ export class RecommendationEngine {
         type: 'budget_creep',
         description: `You've utilized ${summary.budgetUtilization.toFixed(0)}% of your monthly budget, but only ${summary.expectedPacePercentage.toFixed(0)}% of the month has passed.`,
         reasoning: `To finish the month without overspending, aim to limit total daily spending to ${currencySymbol}${dailyCap.toFixed(0)}/day for the remaining ${summary.daysRemaining} days.`,
-        actionLabel: 'View Pace Gauge',
+        actionLabel: 'View Budget Pace',
         actionType: 'view_analytics',
       });
     }

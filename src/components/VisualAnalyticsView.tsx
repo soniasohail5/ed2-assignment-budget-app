@@ -8,15 +8,20 @@ import {
   CheckCircle2, 
   AlertCircle,
   HelpCircle,
-  ArrowRight
+  ArrowRight,
+  Sliders
 } from 'lucide-react';
-import { MonthlyBudgetSummary, Category, Transaction } from '../types/finance';
+import { MonthlyBudgetSummary, Category, Transaction, BudgetRatios, DEFAULT_BUDGET_RATIOS } from '../types/finance';
+import { BudgetRatioModal } from './BudgetRatioModal';
 
 interface VisualAnalyticsViewProps {
   summary: MonthlyBudgetSummary;
   categories: Category[];
   transactions: Transaction[];
   currencySymbol: string;
+  budgetRatios?: BudgetRatios;
+  monthlyIncome?: number;
+  onUpdateBudgetRatios?: (ratios: BudgetRatios) => void;
 }
 
 export const VisualAnalyticsView: React.FC<VisualAnalyticsViewProps> = ({
@@ -24,8 +29,13 @@ export const VisualAnalyticsView: React.FC<VisualAnalyticsViewProps> = ({
   categories,
   transactions,
   currencySymbol,
+  budgetRatios,
+  monthlyIncome,
+  onUpdateBudgetRatios,
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [isRatioModalOpen, setIsRatioModalOpen] = useState(false);
+  const activeRatios = budgetRatios || DEFAULT_BUDGET_RATIOS;
 
   // Filter current month expenses
   const monthExpenses = React.useMemo(() => {
@@ -393,7 +403,7 @@ export const VisualAnalyticsView: React.FC<VisualAnalyticsViewProps> = ({
           {/* Trajectory Insights Bar */}
           <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs flex items-center justify-between">
             <span className="text-slate-400">
-              Current burn rate: <strong className="text-white font-mono">{currencySymbol}{summary.dailyAverageSpend.toFixed(0)}/day</strong>
+              Current daily average: <strong className="text-white font-mono">{currencySymbol}{summary.dailyAverageSpend.toFixed(0)}/day</strong>
             </span>
             <span className="text-slate-400">
               Remaining daily limit: <strong className="text-emerald-400 font-mono">{currencySymbol}{summary.recommendedDailyRemaining.toFixed(0)}/day</strong>
@@ -403,20 +413,37 @@ export const VisualAnalyticsView: React.FC<VisualAnalyticsViewProps> = ({
 
       </div>
 
-      {/* 50/30/20 Rule Deep Dive */}
+      {/* Budget Allocation Rule Deep Dive (Needs / Wants / Savings) */}
       <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-indigo-400" />
-              The 50 / 30 / 20 Budget Rule Breakdown
-            </h2>
-            <p className="text-xs text-slate-400">
-              Standard personal finance principle: 50% Essential Needs, 30% Discretionary Wants, 20% Savings & Debt Acceleration
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-indigo-400" />
+                Budget Allocation ({activeRatios.needs} / {activeRatios.wants} / {activeRatios.savings})
+              </h2>
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                {activeRatios.needs}% Needs • {activeRatios.wants}% Wants • {activeRatios.savings}% Savings
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Personalized envelope targets based on your financial framework
             </p>
           </div>
-          <div className="text-xs font-semibold text-slate-300 bg-slate-950/70 px-3 py-1.5 rounded-xl border border-slate-800 shrink-0">
-            Based on {currencySymbol}{incomeBase.toFixed(0)} monthly base
+          
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <div className="text-xs font-semibold text-slate-300 bg-slate-950/70 px-3 py-1.5 rounded-xl border border-slate-800">
+              Based on {currencySymbol}{incomeBase.toFixed(0)} monthly base
+            </div>
+            {onUpdateBudgetRatios && (
+              <button
+                onClick={() => setIsRatioModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Adjust Ratios</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -426,80 +453,118 @@ export const VisualAnalyticsView: React.FC<VisualAnalyticsViewProps> = ({
           {/* Needs */}
           <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-indigo-400 uppercase tracking-wider">
-                Needs (Target: 50%)
+              <span className="font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                Needs (Target: {activeRatios.needs}%)
               </span>
               <span className="font-mono text-sm font-extrabold text-white">
                 {needsPct}%
               </span>
             </div>
-            <div className="text-xl font-mono font-bold text-white">
-              {currencySymbol}{summary.needsSpend.toFixed(0)}
+            <div className="flex items-baseline justify-between">
+              <div className="text-xl font-mono font-bold text-white">
+                {currencySymbol}{summary.needsSpend.toFixed(0)}
+              </div>
+              <div className="text-[11px] text-slate-500 font-mono">
+                of {currencySymbol}{((incomeBase * activeRatios.needs) / 100).toFixed(0)} target
+              </div>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
               <div 
-                className={`h-full rounded-full ${needsPct > 55 ? 'bg-amber-500' : 'bg-indigo-500'}`}
-                style={{ width: `${Math.min(100, (needsPct / 50) * 100)}%` }}
+                className={`h-full rounded-full transition-all duration-300 ${needsPct > (activeRatios.needs + 5) ? 'bg-amber-500' : 'bg-indigo-500'}`}
+                style={{ width: `${Math.min(100, activeRatios.needs > 0 ? (needsPct / activeRatios.needs) * 100 : 0)}%` }}
               />
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               Rent, utilities, groceries, transportation, health insurance.
-              {needsPct <= 50 ? ' Safely within the 50% target envelope.' : ' Over target by ' + (needsPct - 50) + '%.'}
+              {needsPct <= activeRatios.needs 
+                ? ` Safely within your ${activeRatios.needs}% target envelope.` 
+                : ` Over target by ${needsPct - activeRatios.needs}%.`}
             </p>
           </div>
 
           {/* Wants */}
           <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-amber-400 uppercase tracking-wider">
-                Wants (Target: 30%)
+              <span className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                Wants (Target: {activeRatios.wants}%)
               </span>
               <span className="font-mono text-sm font-extrabold text-white">
                 {wantsPct}%
               </span>
             </div>
-            <div className="text-xl font-mono font-bold text-white">
-              {currencySymbol}{summary.wantsSpend.toFixed(0)}
+            <div className="flex items-baseline justify-between">
+              <div className="text-xl font-mono font-bold text-white">
+                {currencySymbol}{summary.wantsSpend.toFixed(0)}
+              </div>
+              <div className="text-[11px] text-slate-500 font-mono">
+                of {currencySymbol}{((incomeBase * activeRatios.wants) / 100).toFixed(0)} target
+              </div>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
               <div 
-                className={`h-full rounded-full ${wantsPct > 35 ? 'bg-red-500' : 'bg-amber-500'}`}
-                style={{ width: `${Math.min(100, (wantsPct / 30) * 100)}%` }}
+                className={`h-full rounded-full transition-all duration-300 ${wantsPct > (activeRatios.wants + 5) ? 'bg-red-500' : 'bg-amber-500'}`}
+                style={{ width: `${Math.min(100, activeRatios.wants > 0 ? (wantsPct / activeRatios.wants) * 100 : 0)}%` }}
               />
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               Dining out, coffee shops, subscriptions, leisure, shopping.
-              {wantsPct > 30 ? ` Exceeding target by ${wantsPct - 30}%. High opportunity to optimize.` : ' Well disciplined under 30%.'}
+              {wantsPct > activeRatios.wants 
+                ? ` Exceeding target by ${wantsPct - activeRatios.wants}%. Opportunity to trim.` 
+                : ` Well disciplined under ${activeRatios.wants}% target.`}
             </p>
           </div>
 
           {/* Savings */}
           <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-emerald-400 uppercase tracking-wider">
-                Savings (Target: 20%)
+              <span className="font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                Savings (Target: {activeRatios.savings}%)
               </span>
               <span className="font-mono text-sm font-extrabold text-white">
                 {summary.savingsRate}%
               </span>
             </div>
-            <div className={`text-xl font-mono font-bold ${summary.netSavings >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {summary.netSavings >= 0 ? '+' : ''}{currencySymbol}{summary.netSavings.toFixed(0)}
+            <div className="flex items-baseline justify-between">
+              <div className={`text-xl font-mono font-bold ${summary.netSavings >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {summary.netSavings >= 0 ? '+' : ''}{currencySymbol}{summary.netSavings.toFixed(0)}
+              </div>
+              <div className="text-[11px] text-slate-500 font-mono">
+                of {currencySymbol}{((incomeBase * activeRatios.savings) / 100).toFixed(0)} target
+              </div>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
               <div 
-                className="h-full rounded-full bg-emerald-500"
-                style={{ width: `${Math.min(100, (summary.savingsRate / 20) * 100)}%` }}
+                className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                style={{ width: `${Math.min(100, activeRatios.savings > 0 ? (summary.savingsRate / activeRatios.savings) * 100 : 0)}%` }}
               />
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               Emergency fund deposits, debt principal payoff, investments.
-              {summary.savingsRate >= 20 ? ' Exceeding the golden 20% savings threshold!' : ' Below 20% target. Automating a payday transfer will help.'}
+              {summary.savingsRate >= activeRatios.savings 
+                ? ` Exceeding your ${activeRatios.savings}% savings threshold!` 
+                : ` Below ${activeRatios.savings}% target. Automating a payday transfer will help.`}
             </p>
           </div>
 
         </div>
       </div>
+
+      {/* Budget Ratio Modal */}
+      {onUpdateBudgetRatios && (
+        <BudgetRatioModal
+          isOpen={isRatioModalOpen}
+          onClose={() => setIsRatioModalOpen(false)}
+          currentRatios={activeRatios}
+          monthlyIncome={monthlyIncome || summary.totalIncome || 3500}
+          currencySymbol={currencySymbol}
+          onSave={newRatios => {
+            onUpdateBudgetRatios(newRatios);
+          }}
+        />
+      )}
 
       {/* Bottom Grid: Top Merchants & Payment Methods */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

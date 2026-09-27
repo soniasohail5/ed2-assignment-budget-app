@@ -14,7 +14,7 @@ import { AddTransactionModal } from './components/AddTransactionModal';
 import { AuthService } from './services/authService';
 import { StorageService, CURRENCY_CONFIGS } from './services/storageService';
 import { RecommendationEngine } from './services/recommendationEngine';
-import { User, Category, Transaction, SavingGoal, CurrencyCode } from './types/finance';
+import { User, Category, Transaction, SavingGoal, CurrencyCode, BudgetRatios } from './types/finance';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -84,8 +84,9 @@ export default function App() {
       summary: monthlySummary,
       goals,
       currencySymbol,
+      budgetRatios: user?.budgetRatios,
     });
-  }, [categories, transactions, monthlySummary, goals, currencySymbol]);
+  }, [categories, transactions, monthlySummary, goals, currencySymbol, user?.budgetRatios]);
 
   // Handlers for Transactions
   const handleSaveTransaction = (txData: Omit<Transaction, 'id' | 'userId' | 'createdAt'>) => {
@@ -153,6 +154,12 @@ export default function App() {
   const handleCurrencyChange = (code: CurrencyCode) => {
     if (!user) return;
     const updated = AuthService.updateUserProfile(user.id, { currency: code });
+    setUser(updated);
+  };
+
+  const handleUpdateBudgetRatios = (ratios: BudgetRatios) => {
+    if (!user) return;
+    const updated = AuthService.updateUserProfile(user.id, { budgetRatios: ratios });
     setUser(updated);
   };
 
@@ -240,6 +247,9 @@ export default function App() {
             goals={goals}
             recommendations={recommendations}
             currencySymbol={currencySymbol}
+            budgetRatios={user.budgetRatios}
+            monthlyIncome={user.monthlyIncomeTarget}
+            onUpdateBudgetRatios={handleUpdateBudgetRatios}
             onOpenAddModal={() => {
               setEditingTransaction(null);
               setIsAddTxOpen(true);
@@ -256,6 +266,9 @@ export default function App() {
             categories={categories}
             transactions={transactions}
             currencySymbol={currencySymbol}
+            budgetRatios={user.budgetRatios}
+            monthlyIncome={user.monthlyIncomeTarget}
+            onUpdateBudgetRatios={handleUpdateBudgetRatios}
           />
         )}
 

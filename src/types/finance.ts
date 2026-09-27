@@ -68,12 +68,25 @@ export interface UserSecuritySettings {
   twoFactorSimulated: boolean;
 }
 
+export interface BudgetRatios {
+  needs: number;   // e.g. 50
+  wants: number;   // e.g. 30
+  savings: number; // e.g. 20
+}
+
+export const DEFAULT_BUDGET_RATIOS: BudgetRatios = {
+  needs: 50,
+  wants: 30,
+  savings: 20,
+};
+
 export interface User {
   id: string;
   email: string;
   name: string;
   currency: CurrencyCode;
   monthlyIncomeTarget: number;
+  budgetRatios?: BudgetRatios;
   createdAt: string;
   lastLoginAt: string;
   securitySettings: UserSecuritySettings;

@@ -151,7 +151,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </h1>
 
               <p className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed">
-                Track income and expenses, monitor burn rate velocity against your calendar days, examine interactive visual analytics, and receive customized money-saving recommendations.
+                Track income and expenses, monitor monthly pacing against your calendar days, examine interactive visual analytics, and receive customized money-saving recommendations.
               </p>
             </div>
 
@@ -163,7 +163,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 </div>
                 <h2 className="text-sm font-bold text-white">Visual Analytics</h2>
                 <p className="text-xs text-slate-400">
-                  Interactive donut breakdowns, cumulative burn trajectory, and daily spending velocity.
+                  Interactive donut breakdowns, cumulative spending trajectory, and daily expense activity.
                 </p>
               </div>
 

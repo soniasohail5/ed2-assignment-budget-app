@@ -6,13 +6,14 @@ Track income and expenses, monitor daily spending, visualize cash flow with inte
 
 ### 📊 Dashboard & Budget Pacing
 - **Real-Time Financial Overview**: At-a-glance KPIs for total income, total expenses, net savings rate, and remaining budget.
-- **Spending Velocity & Burn Gauge**: Compares your budget burn percentage against the actual percentage of days elapsed in the month to detect overspending early.
+- **Budget Pace Tracking**: Compares your budget utilization against the days elapsed in the month to detect overspending early.
 - **Safe Daily Allowance**: Dynamically calculates your safe daily spend limit based on remaining days and unallocated funds.
 - **Daily Spending Outflows**: Interactive bar visualization displaying day-by-day spending patterns, highlighting weekend versus weekday activity.
 
-### ⚖️ 50/30/20 Rule Breakdown
-- Automated categorization of expenses into **Needs (50%)**, **Wants (30%)**, and **Savings (20%)**.
-- Visual progress bar and variance indicators to help you keep essential living costs, discretionary spending, and savings balanced.
+### ⚖️ Customizable Budget Framework (Needs / Wants / Savings)
+- **Customizable Target Ratios**: Set your own allocation percentages (e.g., 50/30/20 Classic, 60/20/20 Urban Metro, 50/20/30 Aggressive Saver, 70/20/10 Tight Essentials, 40/30/30 Wealth Builder, or custom ratios).
+- **Automated Categorization**: Sorts expenses into essential **Needs**, discretionary **Wants**, and **Savings / Investments**.
+- **Real-Time Visual Envelope Meters**: Live progress bars and variance indicators alert you when category spending diverges from your personalized targets.
 
 ### 📈 Deep Visual Analytics
 - **Category Donut Chart**: Interactive breakdown of expenditures across customizable categories with percentage shares.
@@ -24,9 +25,9 @@ Track income and expenses, monitor daily spending, visualize cash flow with inte
 - **Recurring Charge Detection**: Flags subscriptions and monthly commitments (e.g., Netflix, Spotify, gym memberships) to audit fixed overhead.
 - **Search, Filter & Sort**: Fast client-side filtering by category, payment method, date range, or transaction type.
 
-### 🎯 Category Budgets & Sinking Funds
+### 🎯 Category Budgets & Savings Goals
 - **Category Limits**: Set target monthly caps per category with visual progress meters and warning thresholds (normal, warning at 80%, over-budget at 100%).
-- **Savings Goals**: Create sinking funds and financial targets (e.g., Emergency Fund, Vacation, New Laptop) with target deadlines, monthly contribution trackers, and completion milestones.
+- **Savings Goals**: Create financial targets (e.g., Emergency Fund, Vacation, New Laptop) with target deadlines, monthly contribution trackers, and completion milestones.
 
 ### 💡 Actionable Savings Recommendations
 - **Heuristic Pattern Analysis**: Automated detection of dining out spikes, micro-spending leakage (frequent purchases under $15), and subscription creep.

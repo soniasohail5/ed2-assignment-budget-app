@@ -61,6 +61,7 @@ export class AuthService {
       name: 'Alex Morgan',
       currency: 'USD',
       monthlyIncomeTarget: 3850,
+      budgetRatios: { needs: 50, wants: 30, savings: 20 },
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       securitySettings: {
@@ -137,6 +138,7 @@ export class AuthService {
       name,
       currency: params.currency || 'USD',
       monthlyIncomeTarget: params.monthlyIncome || 3500,
+      budgetRatios: { needs: 50, wants: 30, savings: 20 },
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       securitySettings: {
@@ -292,7 +294,7 @@ export class AuthService {
   /**
    * Update user profile information
    */
-  static updateUserProfile(userId: string, updates: Partial<Pick<User, 'name' | 'currency' | 'monthlyIncomeTarget' | 'securitySettings'>>): User {
+  static updateUserProfile(userId: string, updates: Partial<Pick<User, 'name' | 'currency' | 'monthlyIncomeTarget' | 'budgetRatios' | 'securitySettings'>>): User {
     const users = getAllUsers();
     const index = users.findIndex(u => u.id === userId);
     if (index === -1) throw new Error('User not found');
