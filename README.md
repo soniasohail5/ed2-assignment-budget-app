@@ -38,3 +38,10 @@ Track income and expenses, monitor daily spending, visualize cash flow with inte
 - **Multi-Currency Support**: Native support for USD ($), EUR (€), GBP (£), CAD ($), AUD ($), JPY (¥), and INR (₹).
 - **100% Client-Side Privacy**: Data stays in your browser's persistent storage.
 - **Data Export & Backup**: One-click export of transactions to CSV (spreadsheet-compatible) and full account backup/restore via JSON.
+
+### Video Demo 
+Youtube Link: https://youtu.be/az1jloE3M5w
+
+
+
+
