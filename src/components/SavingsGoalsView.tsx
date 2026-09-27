@@ -108,7 +108,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
         <div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <Target className="w-6 h-6 text-emerald-400" />
-            Savings Goals & Sinking Funds
+            Savings Goals
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
             Allocate your monthly surplus toward milestone targets and track acceleration

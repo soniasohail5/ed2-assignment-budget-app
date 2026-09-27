@@ -183,7 +183,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 </div>
                 <h2 className="text-sm font-bold text-white">50/30/20 Principles</h2>
                 <p className="text-xs text-slate-400">
-                  Automated categorization of Needs vs Wants vs Sinking funds to balance your cashflow.
+                  Automated categorization of Needs vs Wants vs Savings to balance your cashflow.
                 </p>
               </div>
             </div>

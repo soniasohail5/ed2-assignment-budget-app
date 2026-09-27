@@ -183,7 +183,7 @@ export class RecommendationEngine {
             impact: 'high',
             type: 'smart_habit',
             description: `Applying your top savings recommendations (${currencySymbol}${potentialSavingsTotal}/mo) will fund your "${primaryGoal.title}" goal ${monthsSaved} month${monthsSaved > 1 ? 's' : ''} sooner!`,
-            reasoning: `Redirecting optimized dining and subscription savings straight into your dedicated sinking fund turns small daily adjustments into tangible milestone wins.`,
+            reasoning: `Redirecting optimized dining and subscription savings straight into your dedicated savings goal turns small daily adjustments into tangible milestone wins.`,
             actionLabel: 'View Savings Goals',
             actionType: 'view_goals',
           });
