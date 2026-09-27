@@ -2,6 +2,26 @@
 ClaritySpend is a modern, responsive personal finance and budget analytics web application. 
 Track income and expenses, monitor daily spending, visualize cash flow with interactive charts, set category limits for budgeting.
 
+## 🛠️ Core Technologies & Frameworks
+
+### 💻 Frontend & UI Architecture
+- **[React 19](https://react.dev/)**: Latest functional component architecture with hooks, state management, and modern concurrent capabilities.
+- **[TypeScript](https://www.typescriptlang.org/)**: Full strict type safety across financial calculations, transaction schemas, and UI state models.
+- **[Tailwind CSS v4](https://tailwindcss.com/)**: Next-generation utility-first styling engine integrated via `@tailwindcss/vite` for sleek, responsive dark-mode aesthetics.
+- **[Lucide React](https://lucide.dev/)**: Comprehensive, lightweight iconography across all dashboards, category tags, and action buttons.
+- **[Motion](https://motion.dev/)**: Smooth interactive transitions and visual effects.
+- **[Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)**: Celebration milestone animations when completing savings goals.
+
+### ⚙️ Build System & Server Runtime
+- **[Vite 8](https://vite.dev/)**: Ultra-fast next-gen build tool and dev server featuring optimized ESM bundling.
+- **[Node.js](https://nodejs.org/) & [Express](https://expressjs.com/)**: Fast, minimal server runtime for local execution and hosting.
+- **[TSX](https://github.com/privatenumber/tsx)**: Seamless TypeScript execution engine for server scripts.
+
+### 🔒 Security, Storage & Intelligence
+- **Web Crypto API**: Native browser cryptographic primitives implementing PBKDF2 with SHA-256 for client-side password hashing and credential verification.
+- **Client-Side Persistence**: Fast, privacy-first local storage architecture with multi-account switching and full JSON/CSV data backup & import/export.
+- **Google Gen AI SDK (`@google/genai`)**: Modern Google Gen AI TypeScript SDK configured for future AI-powered financial advisory features.
+
 ## Features
 
 ### 📊 Dashboard & Budget Pacing
